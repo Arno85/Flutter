@@ -1,2 +1,2 @@
-# Quizz-App
+# Flutter
 Learning Flutter &amp; Dart
