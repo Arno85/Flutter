@@ -1,4 +1,4 @@
-package com.example.flutter_complete_guide
+package com.example.quiz_app
 
 import androidx.annotation.NonNull;
 import io.flutter.embedding.android.FlutterActivity
