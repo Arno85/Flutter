@@ -5,56 +5,83 @@ import '../models/transaction.dart';
 
 class TransactionCard extends StatelessWidget {
   final Transaction transaction;
+  final Function deleteTransactionHandler;
 
-  TransactionCard(this.transaction);
+  TransactionCard(this.transaction, this.deleteTransactionHandler);
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 3,
+      elevation: 5,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
       child: Row(
         children: <Widget>[
           Container(
-            width: 100,
-            padding: EdgeInsets.only(top: 10, bottom: 10),
-            margin: EdgeInsets.fromLTRB(15, 10, 20, 10),
+            width: 60,
+            height: 60,
+            padding: EdgeInsets.only(top: 5, bottom: 5),
+            margin: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
             decoration: BoxDecoration(
+              color: Theme.of(context).primaryColorDark,
+              shape: BoxShape.circle,
               border: Border.all(
-                color: Colors.purple,
+                color: Theme.of(context).primaryColorDark,
                 width: 2,
               ),
             ),
-            child: Center(
-              child: Text(
-                '\$${transaction.amount.toStringAsFixed(2)}',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
-                  color: Colors.purple,
+            child: FittedBox(
+              child: Padding(
+                padding: EdgeInsets.all(5),
+                child: Text(
+                  '\$${transaction.amount.toStringAsFixed(2)}',
+                  style: TextStyle(
+                      fontSize: 16,
+                      color: Theme.of(context).textTheme.button.color),
                 ),
               ),
             ),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text(
-                transaction.title,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
+          Flexible(
+            fit: FlexFit.tight,
+            flex: 6,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  transaction.title,
+                  style: Theme.of(context).textTheme.title,
                 ),
-              ),
-              Text(
-                DateFormat('yyyy-MM-dd').format(transaction.date),
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                  color: Colors.grey,
-                ),
-              )
-            ],
-          )
+                Text(
+                  DateFormat('yyyy-MM-dd').format(transaction.date),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: Colors.grey,
+                  ),
+                )
+              ],
+            ),
+          ),
+          MediaQuery.of(context).size.width > 460
+              ? Flexible(
+                  fit: FlexFit.tight,
+                  flex: 2,
+                  child: FlatButton.icon(
+                    icon: Icon(Icons.delete),
+                    textColor: Theme.of(context).errorColor,
+                    label: Text('Delete', style: TextStyle(fontWeight: FontWeight.bold)),
+                    onPressed: () => deleteTransactionHandler(transaction.id),
+                  ),
+                )
+              : Flexible(
+                  fit: FlexFit.tight,
+                  flex: 1,
+                  child: IconButton(
+                    icon: Icon(Icons.delete),
+                    color: Theme.of(context).errorColor,
+                    onPressed: () => deleteTransactionHandler(transaction.id),
+                  ),
+                )
         ],
       ),
     );
