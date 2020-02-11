@@ -76,7 +76,8 @@ class _EditProductScreenState extends State<EditProductScreen> {
       _isLoading = true;
     });
     if (_product.id != null) {
-      Provider.of<Products>(context, listen: false).updateProduct(_product);
+      await Provider.of<Products>(context, listen: false)
+          .updateProduct(_product);
       setState(() {
         _isLoading = false;
       });
@@ -101,12 +102,12 @@ class _EditProductScreenState extends State<EditProductScreen> {
             ],
           ),
         );
-      } finally {
-        setState(() {
-          _isLoading = false;
-        });
-        Navigator.of(context).pop();
       }
+
+      setState(() {
+        _isLoading = false;
+      });
+      Navigator.of(context).pop();
     }
   }
 

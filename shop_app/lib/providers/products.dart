@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shop_app/models/http_exception.dart';
 import 'dart:convert';
 
-import '../data/dummy_products.dart';
 import './product.dart';
 
 class Products with ChangeNotifier {
-  var _url = 'https://learning-flutter-arno85.firebaseio.com/products.json';
-
-  List<Product> _items = dummyProducts;
+  List<Product> _items = [];
 
   List<Product> get items {
     return [..._items];
@@ -23,9 +21,11 @@ class Products with ChangeNotifier {
   }
 
   Future<void> addProduct(Product product) async {
+    const url = 'https://learning-flutter-arno85.firebaseio.com/products.json';
+
     try {
       final response = await http.post(
-        _url,
+        url,
         body: json.encode({
           'title': product.title,
           'description': product.description,
@@ -34,7 +34,7 @@ class Products with ChangeNotifier {
           'isFavorite': product.isFavorite,
         }),
       );
-      print(json.decode(response.body));
+
       final newProduct = Product(
         title: product.title,
         description: product.description,
@@ -42,7 +42,8 @@ class Products with ChangeNotifier {
         imageUrl: product.imageUrl,
         id: json.decode(response.body)['name'],
       );
-       _items.insert(0, newProduct);
+
+      _items.insert(0, newProduct);
       notifyListeners();
     } catch (error) {
       print(error);
@@ -51,25 +52,69 @@ class Products with ChangeNotifier {
   }
 
   Future<void> getProducts() async {
+    const url = 'https://learning-flutter-arno85.firebaseio.com/products.json';
+    
     try {
-      final response = await http.get(_url);
-      print(json.decode(response.body));
+      final response = await http.get(url);
+      final extractedData = json.decode(response.body) as Map<String, dynamic>;
+      _items.clear();
+
+      extractedData.forEach((prodId, prodData) {
+        _items.add(Product(
+            id: prodId,
+            title: prodData['title'],
+            description: prodData['description'],
+            price: prodData['price'],
+            imageUrl: prodData['imageUrl'],
+            isFavorite: prodData['isFavorite']));
+      });
+      notifyListeners();
     } catch (error) {
       throw error;
     }
   }
 
-  void updateProduct(Product product) {
+  Future<void> updateProduct(Product product) async {
     final prodIndex = _items.indexWhere((item) => item.id == product.id);
 
     if (prodIndex >= 0) {
+      final id = product.id;
+      final url =
+          'https://learning-flutter-arno85.firebaseio.com/products/$id.json';
+
+      await http.patch(
+        url,
+        body: json.encode({
+          'title': product.title,
+          'description': product.description,
+          'imageUrl': product.imageUrl,
+          'price': product.price,
+        }),
+      );
+
       _items[prodIndex] = product;
       notifyListeners();
     }
   }
 
-  void deleteProduct(Product product) {
-    _items.remove(product);
+  Future<void> deleteProduct(Product product) async {
+    final id = product.id;
+    final url =
+        'https://learning-flutter-arno85.firebaseio.com/products/$id.json';
+
+    var existingProductIndex = _items.indexWhere((prod) => prod.id == id);
+    var existingProduct = product;
+
+     _items.remove(product);
     notifyListeners();
+
+    final response = await http.delete(url);
+
+    if (response.statusCode >= 400) {
+      _items.insert(existingProductIndex, existingProduct);
+      notifyListeners();
+      throw HttpException('Could not delete product');
+    }
+    existingProduct = null;
   }
 }

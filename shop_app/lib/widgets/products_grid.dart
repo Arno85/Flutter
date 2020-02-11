@@ -13,7 +13,7 @@ class ProductsGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final productsProvider = Provider.of<Products>(context);
     final products = showFavorites ? productsProvider.favoriteItems : productsProvider.items;
-  print('rebuilt');
+
     return GridView.builder(
       padding: const EdgeInsets.all(10),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
