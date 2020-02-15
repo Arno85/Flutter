@@ -21,35 +21,17 @@ class ProductOverviewScreen extends StatefulWidget {
 class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
   var _showOnlyFavorites = false;
   var _isInit = false;
-  var _isLoading = false;
-
-  @override
-  void initState() {
-    print('init');
-    super.initState();
-  }
-
-  @override
-  void didChangeDependencies() {
-    if (!_isInit) {
-      setState(() {
-        _isLoading = true;
-      });
-
-      Provider.of<Products>(context).getProducts().then(
-            (_) => {
-              setState(() {
-                _isLoading = false;
-              })
-            },
-          );
-    }
-    _isInit = true;
-    super.didChangeDependencies();
-  }
 
   Future<void> _refreshProducts(BuildContext context) async {
-    await Provider.of<Products>(context).getProducts();
+    setState(() {
+      _isInit = false;
+    });
+  }
+
+  @override
+  void reassemble() {
+    _isInit = false;
+    super.reassemble();
   }
 
   @override
@@ -64,6 +46,7 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
             ),
             onSelected: (FilterOptions selectedValue) {
               setState(() {
+                _isInit = true;
                 selectedValue == FilterOptions.All
                     ? _showOnlyFavorites = false
                     : _showOnlyFavorites = true;
@@ -94,9 +77,27 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
         ],
       ),
       drawer: AppDrawer(),
-      body: _isLoading
-          ? Center(
-              child: CircularProgressIndicator(),
+      body: !_isInit
+          ? FutureBuilder(
+              future:
+                  Provider.of<Products>(context, listen: false).getProducts(),
+              builder: (ctx, dataSnapshot) {
+
+                if (dataSnapshot.error != null) {
+                  return Center(
+                    child: Text('An error occured!'),
+                  );
+                }
+
+                return dataSnapshot.connectionState == ConnectionState.waiting
+                    ? Center(
+                        child: CircularProgressIndicator(),
+                      )
+                    : RefreshIndicator(
+                        onRefresh: () => _refreshProducts(context),
+                        child: ProductsGrid(_showOnlyFavorites),
+                      );
+              },
             )
           : RefreshIndicator(
               onRefresh: () => _refreshProducts(context),

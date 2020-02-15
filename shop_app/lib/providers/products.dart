@@ -53,13 +53,16 @@ class Products with ChangeNotifier {
 
   Future<void> getProducts() async {
     const url = 'https://learning-flutter-arno85.firebaseio.com/products.json';
-    
+
     try {
       final response = await http.get(url);
-      final extractedData = json.decode(response.body) as Map<String, dynamic>;
-      _items.clear();
+      final productsFromDb = json.decode(response.body) as Map<String, dynamic>;
 
-      extractedData.forEach((prodId, prodData) {
+      if (productsFromDb == null) {
+        return;
+      }
+      _items.clear();
+      productsFromDb.forEach((prodId, prodData) {
         _items.add(Product(
             id: prodId,
             title: prodData['title'],
@@ -105,7 +108,7 @@ class Products with ChangeNotifier {
     var existingProductIndex = _items.indexWhere((prod) => prod.id == id);
     var existingProduct = product;
 
-     _items.remove(product);
+    _items.remove(product);
     notifyListeners();
 
     final response = await http.delete(url);
