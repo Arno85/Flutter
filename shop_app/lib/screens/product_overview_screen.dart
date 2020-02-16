@@ -46,7 +46,6 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
             ),
             onSelected: (FilterOptions selectedValue) {
               setState(() {
-                _isInit = true;
                 selectedValue == FilterOptions.All
                     ? _showOnlyFavorites = false
                     : _showOnlyFavorites = true;
@@ -70,8 +69,10 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
             ),
             child: IconButton(
               icon: Icon(Icons.shopping_cart),
-              onPressed: () =>
-                  Navigator.of(context).pushNamed(CartScreen.route),
+              onPressed: () {
+                _isInit = true;
+                Navigator.of(context).pushNamed(CartScreen.route);
+              },
             ),
           )
         ],
@@ -82,12 +83,13 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
               future:
                   Provider.of<Products>(context, listen: false).getProducts(),
               builder: (ctx, dataSnapshot) {
-
                 if (dataSnapshot.error != null) {
                   return Center(
                     child: Text('An error occured!'),
                   );
                 }
+
+                _isInit = true;
 
                 return dataSnapshot.connectionState == ConnectionState.waiting
                     ? Center(

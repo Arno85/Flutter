@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shop_app/helpers/custom_route.dart';
 import 'package:shop_app/providers/auth.dart';
 import 'package:shop_app/providers/cart.dart';
 import 'package:shop_app/providers/orders.dart';
@@ -35,13 +36,15 @@ class MyApp extends StatelessWidget {
           ChangeNotifierProxyProvider<Auth, Products>(
             create: (ctx) => Products(null, null),
             update: (ctx, auth, previousState) {
-              return Products(getToken(auth.token, previousState), getUserId(auth.userId, previousState));
+              return Products(getToken(auth.token, previousState),
+                  getUserId(auth.userId, previousState));
             },
           ),
           ChangeNotifierProxyProvider<Auth, Orders>(
             create: (ctx) => Orders(null, null),
             update: (ctx, auth, previousState) {
-              return Orders(getToken(auth.token, previousState), getUserId(auth.userId, previousState));
+              return Orders(getToken(auth.token, previousState),
+                  getUserId(auth.userId, previousState));
             },
           ),
           ChangeNotifierProvider.value(
@@ -52,10 +55,13 @@ class MyApp extends StatelessWidget {
           builder: (ctx, auth, _) => MaterialApp(
             title: 'My Shop',
             theme: ThemeData(
-              primarySwatch: Colors.purple,
-              accentColor: Colors.deepOrange,
-              fontFamily: 'Lato',
-            ),
+                primarySwatch: Colors.purple,
+                accentColor: Colors.deepOrange,
+                fontFamily: 'Lato',
+                pageTransitionsTheme: PageTransitionsTheme(builders: {
+                  TargetPlatform.android: CustomPageTransitionBuilder(),
+                  TargetPlatform.iOS: CustomPageTransitionBuilder(),
+                })),
             initialRoute: '/',
             routes: {
               '/': (ctx) => auth.isAuth
