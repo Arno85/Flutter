@@ -20,23 +20,22 @@ class Product with ChangeNotifier {
       @required this.imageUrl,
       this.isFavorite});
 
-  Future<void> toggleFavoriteStatus(Product product) async {
+  Future<void> toggleFavoriteStatus(
+      Product product, String authToken, String userId) async {
     var oldStatus = isFavorite;
     isFavorite = !isFavorite;
     notifyListeners();
 
     final id = product.id;
     final url =
-        'https://learning-flutter-arno85.firebaseio.com/products/$id.json';
-  
-    final response = await http.patch(
+        'https://learning-flutter-arno85.firebaseio.com/userFavorite/$userId/$id.json?auth=$authToken';
+
+    final response = await http.put(
       url,
-      body: json.encode({
-        'isFavorite': isFavorite
-      }),
+      body: json.encode(isFavorite),
     );
 
-    if(response.statusCode >= 400) {
+    if (response.statusCode >= 400) {
       isFavorite = oldStatus;
       notifyListeners();
       throw new HttpException('Could not save the is Favorite status');

@@ -6,6 +6,10 @@ import 'dart:convert';
 import './product.dart';
 
 class Products with ChangeNotifier {
+  final String authToken;
+  final String userId;
+  final String _baseUrl = 'https://learning-flutter-arno85.firebaseio.com';
+
   List<Product> _items = [];
 
   List<Product> get items {
@@ -20,9 +24,47 @@ class Products with ChangeNotifier {
     return _items.length;
   }
 
-  Future<void> addProduct(Product product) async {
-    const url = 'https://learning-flutter-arno85.firebaseio.com/products.json';
+  Products(this.authToken, this.userId);
 
+  Future<void> getProducts([bool filterByUser = false]) async {
+    final filterString = filterByUser ? '&orderBy="creatorId"&equalTo="$userId"' : '';
+    final url =
+        '$_baseUrl/products.json?auth=$authToken$filterString';
+    final favoriteUrl =
+        '$_baseUrl/userFavorite/$userId.json?auth=$authToken';
+
+    try {
+      final response = await http.get(url);
+      final favResponse = await http.get(favoriteUrl);
+      final productsFromDb = json.decode(response.body) as Map<String, dynamic>;
+      final favoritesFromDb = json.decode(favResponse.body);
+
+      if (productsFromDb == null) {
+        return;
+      }
+
+      _items.clear();
+      productsFromDb.forEach((prodId, prodData) {
+        _items.add(
+          Product(
+              id: prodId,
+              title: prodData['title'],
+              description: prodData['description'],
+              price: prodData['price'],
+              imageUrl: prodData['imageUrl'],
+              isFavorite: favoritesFromDb == null ? false : favoritesFromDb[prodId] ?? false),
+        );
+      });
+
+      notifyListeners();
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  Future<void> addProduct(Product product) async {
+    final url =
+        'https://learning-flutter-arno85.firebaseio.com/products.json?auth=$authToken';
     try {
       final response = await http.post(
         url,
@@ -31,7 +73,7 @@ class Products with ChangeNotifier {
           'description': product.description,
           'imageUrl': product.imageUrl,
           'price': product.price,
-          'isFavorite': product.isFavorite,
+          'creatorId': userId
         }),
       );
 
@@ -46,33 +88,6 @@ class Products with ChangeNotifier {
       _items.insert(0, newProduct);
       notifyListeners();
     } catch (error) {
-      print(error);
-      throw error;
-    }
-  }
-
-  Future<void> getProducts() async {
-    const url = 'https://learning-flutter-arno85.firebaseio.com/products.json';
-
-    try {
-      final response = await http.get(url);
-      final productsFromDb = json.decode(response.body) as Map<String, dynamic>;
-
-      if (productsFromDb == null) {
-        return;
-      }
-      _items.clear();
-      productsFromDb.forEach((prodId, prodData) {
-        _items.add(Product(
-            id: prodId,
-            title: prodData['title'],
-            description: prodData['description'],
-            price: prodData['price'],
-            imageUrl: prodData['imageUrl'],
-            isFavorite: prodData['isFavorite']));
-      });
-      notifyListeners();
-    } catch (error) {
       throw error;
     }
   }
@@ -83,7 +98,7 @@ class Products with ChangeNotifier {
     if (prodIndex >= 0) {
       final id = product.id;
       final url =
-          'https://learning-flutter-arno85.firebaseio.com/products/$id.json';
+          'https://learning-flutter-arno85.firebaseio.com/products/$id.json?auth=$authToken';
 
       await http.patch(
         url,
@@ -103,7 +118,7 @@ class Products with ChangeNotifier {
   Future<void> deleteProduct(Product product) async {
     final id = product.id;
     final url =
-        'https://learning-flutter-arno85.firebaseio.com/products/$id.json';
+        'https://learning-flutter-arno85.firebaseio.com/products/$id.json?auth=$authToken';
 
     var existingProductIndex = _items.indexWhere((prod) => prod.id == id);
     var existingProduct = product;

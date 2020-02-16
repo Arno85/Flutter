@@ -6,6 +6,9 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class Orders with ChangeNotifier {
+  final String authToken;
+  final String userId;
+
   List<OrderItem> _orders = [];
 
   List<OrderItem> get orders {
@@ -16,8 +19,10 @@ class Orders with ChangeNotifier {
     return _orders.length;
   }
 
+  Orders(this.authToken, this.userId);
+
   Future<void> addOrder(List<CartItem> cartProducts, double total) async {
-    const url = 'https://learning-flutter-arno85.firebaseio.com/orders.json';
+    final url = 'https://learning-flutter-arno85.firebaseio.com/orders/$userId.json?auth=$authToken';
 
     final timestamp = DateTime.now();
 
@@ -37,8 +42,6 @@ class Orders with ChangeNotifier {
       }),
     );
 
-    print(response);
-
     if (response.statusCode >= 400) {
       throw new HttpException('Could not save the order');
     }
@@ -57,7 +60,7 @@ class Orders with ChangeNotifier {
   }
 
   Future<void> getOrders() async {
-    const url = 'https://learning-flutter-arno85.firebaseio.com/orders.json';
+    final url = 'https://learning-flutter-arno85.firebaseio.com/orders/$userId.json?auth=$authToken';
 
     final response = await http.get(url);
     final ordersFromDb = json.decode(response.body) as Map<String, dynamic>;
