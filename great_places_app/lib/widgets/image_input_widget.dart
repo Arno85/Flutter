@@ -42,7 +42,7 @@ class _ImageInputWidgetState extends State<ImageInputWidget> {
   @override
   Widget build(BuildContext context) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: <Widget>[
         Container(
           width: 200,
@@ -68,8 +68,7 @@ class _ImageInputWidgetState extends State<ImageInputWidget> {
         SizedBox(width: 10),
         Expanded(
           child: FlatButton.icon(
-            color: Theme.of(context).primaryColor,
-            textColor: Colors.white,
+            textColor: Theme.of(context).primaryColor,
             onPressed: _takePicture,
             icon: Icon(Icons.photo_camera),
             label: Text('Take picture'),

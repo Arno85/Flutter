@@ -12,7 +12,7 @@ static Future<Database> _database() async {
     path.join(dbPath, 'great_places.db'),
     onCreate: (db, version) {
       return db.execute(
-          'CREATE TABLE $placesTableName(id TEXT PRIMARY KEY, title TEXT, image TEXT)');
+          'CREATE TABLE $placesTableName(id TEXT PRIMARY KEY, title TEXT, image TEXT, loc_lat REAL, loc_lng REAL, address TEXT)');
     },
     version: 1,
   );

@@ -24,6 +24,9 @@ dependencies:
   path_provider: ^1.6.0
   path: ^1.6.4
   sqflite: ^1.2.0
+  location: ^2.4.0
+  google_maps_flutter: ^0.5.23+1
+  http: ^0.12.0+4
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
